@@ -1,97 +1,89 @@
-const express = require("express");
 const mongoose = require("mongoose");
+const express = require("express");
 const bodyParser = require("body-parser");
 
-const router = require('express').Router();
 const app = express();
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
 app.use(bodyParser.json());
+const port = 3000;
 
 mongoose.connect("mongodb://127.0.0.1:27017/supermart", {
-    serverSelectionTimeoutMS: 20000
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
 
-
-//criação de models
-
-//model padrão:
-const usuario = new mongoose.Schema({
-    email: {type: String, required: true},
-    senha: {type: String, required: true}
-})
-
-const user = mongoose.model('User',usuario);    
-
-//model específica
-const produtoMercado = new mongoose.Schema({
-    id_produtomercado: {type: Number, required: true},
-    descricao: {type: String, required: true},
-    marca: {type: String, required: true},
-    dataValidade: {type: String, required: true},
-    quantidadeEstoque: {type: String, required: true},
-})
-
-const produto = mongoose.model('produtoMercado',produtoMercado); 
-
-//criação de rotas 
-
-//rota de teste
-
-//criação de rota get
-app.get("/", async(req, res)=>{
-    res.sendFile(__dirname +"/index.html")
-});
-
-//criação da rota de cadastro
-app.post("/cadastrousuario", async (req, res)=>{
-    const email = req.body.email;
-    const senha = req.body.password;
-
-    if(email = null || senha == null){
-        return res.status(400).json({error: "Digite os campos!!!"});
+const UsuarioSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true
+    },
+    senha: {
+        type: String
     }
+});
+const ProdutomercadoSchema = new mongoose.Schema({
+    id_produtomercado: {
+        type: String,
+        required: true
+    },
+    descricao: {
+        type: String
+    },
+    marca: {
+        type: String
+    },
+    dataValidade: {
+        type: Date
+    },
+    quantidadeEstoque: {
+        type: Number
+    }
+})
 
-    const usuario = new usuario({
+const Usuario = mongoose.model("Usuario", UsuarioSchema);
+const Produtomercado = mongoose.model("Produtomercado", ProdutomercadoSchema)
 
+//cadastramento usuario
+
+app.post("/cadastrousuario", async (req, res) => {
+    const email = req.body.email;
+    const senha = req.body.senha;
+    const usuario = new Usuario({
         email: email,
         senha: senha
-    })
-
-    try{
-        const newusuario = await usuario.save();
-        res.json({error: null, msg: "Cadastro ok!!!", usuarioId: newUser.id}) 
-    }
-    catch(error){
-        res.status(400).json({error});
-    }
+    });
+    try {
+        const newUsuario = await usuario.save();
+        res.json({
+            error: null,
+            msg: "Cadastro ok",
+            UsuarioId: newUsuario._id
+        });
+    } catch (error) {}
 });
 
-//criação da rota de cadastro do produto
-app.post("/cadastroprodutomercado", async (req, res)=>{
+app.post("/cadastroprodutomercado", async (req, res) => {
     const id_produtomercado = req.body.id_produtomercado;
     const descricao = req.body.descricao;
     const marca = req.body.marca;
-    const dataValidade = req.res.dataValidade;
-    const quantidadeEstoque = req.res.quantidadeEstoque
-
-    const produtomercado = new produtomercado({
-
+    const dataValidade = req.body.dataValidade;
+    const quantidadeEstoque = req.body.quantidadeEstoque;
+    const Produtomercado = new Produtocmercado({
         id_produtomercado: id_produtomercado,
         descricao: descricao,
         marca: marca,
         dataValidade: dataValidade,
         quantidadeEstoque: quantidadeEstoque
-    })
-
-    try{
-        const newprodutomercado = await produtomercado.save();
-        res.json({error: null, msg: "Cadastro de produto ok!!!", produtomercadoId: newprodutomercado.id}) 
-    }
-    catch(error){
-        res.status(400).json({error});
-    }
+    });
+    try {
+        const newProdutomercado = await produtomercado.save();
+        res.json({
+            error: null,
+            msg: "Cadastro ok",
+            ProdutomercadoId: newProdutomercado._id
+        });
+    } catch (error) {}
 });
-
-//faz a leitura de portas
-app.listen(3000, ()=>{
-    console.log("Rodando na porta 3000")
-})
